@@ -26,38 +26,47 @@
         <script>
             // Get the canvas.
             var canvas = document.getElementById("faceCanvas");
-            var img = document.getElementById("imageElement");
-            canvas.height = img.height;
-            canvas.width = img.width;
+            var imgElement = document.getElementById("imageElement");
 
-            var myCanvas = canvas.getContext("2d");
-            myCanvas.drawImage(img, 0, 0);
-
-            @if(ViewBag.ImageProcessed == true && ViewBag.FacesDetected == true)
-            {
-            <text>
-            img.style.display = "none";
-            var facesFound = true;
-            var facePositions = JSON.parse(JSON.stringify(@Html.Raw(ViewBag.FacePositions)));
-            </text>
-            }
-
-            if(facesFound) {
-                // Move forward.
-                for (face in facePositions) {
-                    // Draw the face.
-                    myCanvas.lineWidth = 2;
-                    myCanvas.strokeStyle = selectColor(face);
-
-                    console.log(selectColor(face));
-                    myCanvas.strokeRect(
-                        facePositions[face]["X"],
-                        facePositions[face]["Y"],
-                        facePositions[face]["Width"],
-                        facePositions[face]["Height"]
-                    );
+                @if(ViewBag.ImageProcessed == true && ViewBag.FacesDetected == true)
+                {
+                    <text>
+                    imgElement.style.display = "none";
+                    var facesFound = true;
+                    var facePositions = JSON.parse(JSON.stringify(@Html.Raw(ViewBag.FacePositions)));
+                    </text>
                 }
-            }
+
+            var img = new Image();
+
+            img.onload = function () {
+                alert(this.width + ' ' + this.height);
+
+                canvas.height = this.height;
+                canvas.width = this.width;
+
+                var myCanvas = canvas.getContext("2d");
+                myCanvas.drawImage(this, 0, 0);            
+
+                if (facesFound) {
+                    // Move forward.
+                    for (face in facePositions) {
+                        // Draw the face.
+                        myCanvas.lineWidth = 2;
+                        myCanvas.strokeStyle = selectColor(face);
+
+                        console.log(selectColor(face));
+                        myCanvas.strokeRect(
+                            facePositions[face]["X"],
+                            facePositions[face]["Y"],
+                            facePositions[face]["Width"],
+                            facePositions[face]["Height"]
+                        );
+                    }
+                }
+            };
+
+            img.src = imgElement.src;
 
             function selectColor(iteration) {
                 if (iteration == 0) { iteration = Math.floor(Math.random()); }

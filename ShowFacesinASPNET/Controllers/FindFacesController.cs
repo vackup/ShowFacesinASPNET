@@ -15,51 +15,59 @@ namespace ShowFacesinASPNET.Controllers
         // GET: FindFaces
         public ActionResult Index()
         {
-            if(Request.HttpMethod == "POST")
+            if (Request.HttpMethod == "POST")
             {
                 ViewBag.ImageProcessed = true;
                 // Try to process the image.
-                if(Request.Files.Count > 0)
+                if (Request.Files.Count > 0)
                 {
-                    // There will be just one file.
-                    var file = Request.Files[0];
-
-                    var fileName = Guid.NewGuid().ToString() + ".jpg";
-                    file.SaveAs(Server.MapPath("~/Images/" + fileName));
-
-                    // Load the saved image, for native processing using Emgu CV.
-                    var bitmap = new Bitmap(Server.MapPath("~/Images/" + fileName));
-
-                    var faces = FaceDetector.DetectFaces(new Image<Bgr, byte>(bitmap).Mat);
-
-                    // If faces where found.
-                    if(faces.Count > 0)
+                    try
                     {
-                        ViewBag.FacesDetected = true;
-                        ViewBag.FaceCount = faces.Count;
+                        // There will be just one file.
+                        var file = Request.Files[0];
 
-                        var positions = new List<Location>();
-                        foreach (var face in faces)
+                        var fileName = Guid.NewGuid().ToString() + ".jpg";
+                        file.SaveAs(Server.MapPath("~/Images/" + fileName));
+
+                        // Load the saved image, for native processing using Emgu CV.
+                        var bitmap = new Bitmap(Server.MapPath("~/Images/" + fileName));
+
+                        var faces = FaceDetector.DetectFaces(new Image<Bgr, byte>(bitmap).Mat);
+
+                        // If faces where found.
+                        if (faces.Count > 0)
                         {
-                            // Add the positions.
-                            positions.Add(new Location
+                            ViewBag.FacesDetected = true;
+                            ViewBag.FaceCount = faces.Count;
+
+                            var positions = new List<Location>();
+                            foreach (var face in faces)
                             {
-                                X = face.X,
-                                Y = face.Y,
-                                Width = face.Width,
-                                Height = face.Height
-                            });
+                                // Add the positions.
+                                positions.Add(new Location
+                                {
+                                    X = face.X,
+                                    Y = face.Y,
+                                    Width = face.Width,
+                                    Height = face.Height
+                                });
+                            }
+
+                            ViewBag.FacePositions = JsonConvert.SerializeObject(positions);
                         }
 
-                        ViewBag.FacePositions = JsonConvert.SerializeObject(positions);
+                        ViewBag.ImageUrl = fileName;
                     }
+                    catch (Exception x)
+                    {
 
-                    ViewBag.ImageUrl = fileName;
+                        throw;
+                    }
                 }
             }
             return View();
         }
-    }
+    }    
 
     public class Location
     {
